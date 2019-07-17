@@ -12,8 +12,6 @@ import java.awt.*;
  */
 public class IndexPanel extends JPanel {
 
-    JPanel indexPanel; // 首页面板
-
     JComboBox systemSelected; // 系统名称下拉框
 
     JLabel systemNameLabel; // 系统名称label
