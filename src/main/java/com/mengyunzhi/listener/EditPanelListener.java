@@ -4,18 +4,18 @@ import java.awt.event.ActionEvent;
 
 /**
  * @author: htx
- * 首页面板监听
+ * @describe 编辑面板监听者
  * @date: 19-7-17
  */
-public interface IndexPanelListener {
+public interface EditPanelListener {
 
     /**
-     * @description 当selectSystemButton按钮点击时触发
+     * @description 当cancelButton按钮点击时触发
      * @param event
      * @return void
      * @author htx
      * @date 下午4:43 19-7-17
      **/
-    void listenerSelectSystemButton(ActionEvent event);
+    void listenerCancelButton(ActionEvent event);
 
 }

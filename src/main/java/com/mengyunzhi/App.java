@@ -10,6 +10,6 @@ public class App
 {
     public static void main( String[] args )
     {
-        MainFrame.mainFrame.setVisible(true);
+        new  MainFrame().setVisible(true);
     }
 }

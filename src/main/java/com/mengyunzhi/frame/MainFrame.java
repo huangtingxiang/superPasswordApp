@@ -1,11 +1,12 @@
 package com.mengyunzhi.frame;
 
+import com.mengyunzhi.listener.EditPanelListener;
 import com.mengyunzhi.panel.EditPanel;
 import com.mengyunzhi.panel.IndexPanel;
-import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 /**
  * @author: htx
@@ -14,19 +15,17 @@ import java.awt.*;
  */
 public class MainFrame extends JFrame {
 
-    public static final MainFrame mainFrame = new MainFrame();
-
     JPanel mainPanel; // 主面板
 
-    JPanel editPanel; // 编辑面板
+    EditPanel editPanel; // 编辑面板
 
-    JPanel indexPanel; // 首页面板
+    IndexPanel indexPanel; // 首页面板
 
-    private MainFrame() {
+    CardLayout layout;
+
+    public MainFrame() {
         initFrame();
-        this.setSize(500, 500);
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//        this.setVisible(true);
+        registerListener();
     }
 
     /**
@@ -38,18 +37,61 @@ public class MainFrame extends JFrame {
      **/
     private void initFrame() {
         // 初始化控件
-        mainPanel = new JPanel(new CardLayout());
+        layout = new CardLayout();
+        mainPanel = new JPanel(layout);
         editPanel = new EditPanel();
         indexPanel = new IndexPanel();
+        setTitle("超级密码生成器");
+        mainPanel.add(indexPanel, IndexPanel.name);
+        mainPanel.add(editPanel, EditPanel.name);
+        setSize(500, 500);
+        getContentPane().add(mainPanel);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        this.setTitle("超级密码生成器");
+    }
 
-        mainPanel.add(editPanel, "edit");
-        mainPanel.add(indexPanel, "index");
+    /**
+     * @description  注册监听者监听子面板事件
+     * @param
+     * @return void
+     * @author htx
+     * @date 下午4:44 19-7-17
+     **/
+    void registerListener() {
+        this.indexPanel.addListener(new IndexPanelListener());
+        this.editPanel.addListener(new EditPanelListener());
+    }
 
+    /**
+     * @description 内部类 负责监听index面板
+     * @author htx
+     * @date 下午4:45 19-7-17
+     **/
+    class IndexPanelListener implements com.mengyunzhi.listener.IndexPanelListener {
 
-        this.getContentPane().add(mainPanel);
+        /**
+         * @description 选择按钮点击时切换到编辑面板
+         * @param event
+         * @return void
+         * @author htx
+         * @date 下午4:58 19-7-17
+         **/
+        @Override
+        public void listenerSelectSystemButton(ActionEvent event) {
+            layout.show(mainPanel, EditPanel.name);
+        }
+    }
 
+    class EditPanelListener implements com.mengyunzhi.listener.EditPanelListener {
+        /**
+         * @description 内部类 负责监听edit面板
+         * @author htx
+         * @date 下午4:45 19-7-17
+         **/
+        @Override
+        public void listenerCancelButton(ActionEvent event) {
+            layout.show(mainPanel, IndexPanel.name);
+        }
     }
 
 }
