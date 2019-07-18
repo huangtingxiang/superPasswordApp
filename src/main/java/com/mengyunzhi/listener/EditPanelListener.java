@@ -1,5 +1,7 @@
 package com.mengyunzhi.listener;
 
+import com.mengyunzhi.entity.SystemMessage;
+
 import java.awt.event.ActionEvent;
 
 /**
@@ -26,5 +28,9 @@ public interface EditPanelListener {
      * @date 下午4:43 19-7-17
      **/
     void listenerCancelButton(ActionEvent event);
+
+    void listenerDoubleClickList(SystemMessage systemMessage);
+
+    void listenerDeleteButton(ActionEvent event);
 
 }

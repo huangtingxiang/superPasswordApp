@@ -53,4 +53,18 @@ public class SystemMessageService {
         }
         return new SystemMessage[0];
     }
+
+    public void save(Object key, SystemMessage systemMessage) {
+        if (systemMessage != null) {
+            dbService.save(key, systemMessage);
+        }
+    }
+
+    public SystemMessage get(Object key) {
+        Object object = dbService.get(key);
+        if (object != null) {
+            return (SystemMessage) object;
+        }
+        return null;
+    }
 }

@@ -11,6 +11,8 @@ public class SystemMessage implements Serializable {
 
     public static final String key = "system-messages";
 
+    public static final String lastCountKey = "last-count";
+
     private String name; // 系统名称
 
     private String superPasswordSeed; // 系统超级密码种子
