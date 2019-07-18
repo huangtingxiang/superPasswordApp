@@ -2,16 +2,12 @@ package com.mengyunzhi.panel;
 
 import com.mengyunzhi.entity.SystemMessage;
 import com.mengyunzhi.listener.IndexPanelListener;
-import com.mengyunzhi.service.SuperPasswordService;
 import com.mengyunzhi.service.SystemMessageService;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,8 +21,6 @@ public class IndexPanel extends JPanel {
     public final static String name = "indexPanel";
 
     private SystemMessageService systemMessageService = SystemMessageService.getInstance();
-
-    private SuperPasswordService superPasswordService = SuperPasswordService.getInstance();
 
     private JComboBox systemSelected; // 系统名称下拉框
 
@@ -47,8 +41,6 @@ public class IndexPanel extends JPanel {
     private JButton countSuperPasswordButton; // 计算超级密码
 
     private Font font; // 字体
-
-    private JLabel titleLabel; // 标题
 
     private Set<IndexPanelListener> listeners = new HashSet<>(); // 外部监听者
 
@@ -87,14 +79,31 @@ public class IndexPanel extends JPanel {
      **/
     private void initComponent() {
         font = new Font("Serif", Font.PLAIN, 16); // 设置字体
-        // 初始化添加按钮
-        selectSystemButton = new JButton("添加"); // 添加按钮
-        selectSystemButton.setFont(font);
+        initComponentForSuperPasswordSeed();
+        initComponentForSuperPassword();
+        initComponentForSystemSelected();
+
+    }
+
+    /**
+     * @description 初始化超级密码种子控件
+     * @author htx
+     * @date 下午8:22 19-7-18
+     **/
+    private void initComponentForSuperPasswordSeed() {
         // 初始化超级密码
         superPasswordSeedLabel = new JLabel("超级密码种子:"); // 超级密码种子
         superPasswordSeedLabel.setFont(font);
         superPasswordSeedTextField = new JTextField(100);    // 超级密码种子输入框
         superPasswordSeedTextField.setFont(font);
+    }
+
+    /**
+     * @description 初始化超级密码控件
+     * @author htx
+     * @date 下午8:22 19-7-18
+     **/
+    private void initComponentForSuperPassword() {
         superPasswordLabel = new JLabel("超级密码生成:"); // 生成超级密码
         superPasswordLabel.setFont(font);
         superPassword = new JLabel(); // 超级密码文本
@@ -102,24 +111,23 @@ public class IndexPanel extends JPanel {
         copySuperPasswordButton.setFont(font);
         countSuperPasswordButton = new JButton("生成");   // 生成按钮
         countSuperPasswordButton.setFont(font);
-        titleLabel = new JLabel("");
-        titleLabel.setFont(font);
+    }
+
+    /**
+     * @description 初始化下拉列表控件
+     * @author htx
+     * @date 下午8:22 19-7-18
+     **/
+    private void initComponentForSystemSelected() {
+        // 初始化添加按钮
+        selectSystemButton = new JButton("添加"); // 添加按钮
+        selectSystemButton.setFont(font);
         // 初始化系统设置
         systemNameLabel = new JLabel("系统名称:"); // 系统名称
         systemNameLabel.setFont(font);
         systemSelected = new JComboBox();   // 系统下拉框
         systemSelected.setFont(font);
         systemSelected.setRenderer(new SelectListCellRenderer());
-        reload();
-        SystemMessage defaultSystemMessage = systemMessageService.get(SystemMessage.lastCountKey);
-        if (defaultSystemMessage != null) {
-            setDefaultSelected(defaultSystemMessage);
-        } else {
-            if (systemSelected.getItemCount() > 0) {
-                setDefaultSelected((SystemMessage) systemSelected.getItemAt(0));
-            }
-
-        }
     }
 
     /**
@@ -129,6 +137,18 @@ public class IndexPanel extends JPanel {
      * @date 下午4:50 19-7-17
      **/
     private void registerEvent() {
+        registerSelectSystemButtonEvent();
+        registerSystemSelectedEvent();
+        registerCopySuperPasswordButtonEvent();
+        registerCountSuperPasswordButtonEvent();
+    }
+
+    /**
+     * @description  注册选择系统按钮事件
+     * @author htx
+     * @date 下午8:46 19-7-18
+     **/
+    public void registerSelectSystemButtonEvent() {
         selectSystemButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -138,30 +158,56 @@ public class IndexPanel extends JPanel {
                 }
             }
         });
+    }
+
+    /**
+     * @description  注册下拉框事件
+     * @author htx
+     * @date 下午8:46 19-7-18
+     **/
+    public void registerSystemSelectedEvent() {
         systemSelected.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    SystemMessage systemMessage = (SystemMessage) e.getItem();
-                    superPasswordSeedTextField.setText(systemMessage.getSuperPasswordSeed());
+                    for (IndexPanelListener listener :
+                            listeners) {
+                        listener.listenerSystemSelectedItemChange(e);
+                    }
                 }
             }
         });
+    }
+
+    /**
+     * @description  注册复制按钮事件
+     * @author htx
+     * @date 下午8:46 19-7-18
+     **/
+    public void registerCopySuperPasswordButtonEvent() {
         copySuperPasswordButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                StringSelection stringSelection = new StringSelection(superPassword.getText());
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(stringSelection, null);
+                for (IndexPanelListener listener :
+                        listeners) {
+                    listener.listenerCopySuperPasswordButton(e);
+                }
             }
         });
+    }
+
+    /**
+     * @description  注册计算按钮事件
+     * @author htx
+     * @date 下午8:46 19-7-18
+     **/
+    public void registerCountSuperPasswordButtonEvent() {
         countSuperPasswordButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String superPassword1 = superPasswordService.getSuperPassword(superPasswordSeedTextField.getText(), new Date());
-                superPassword.setText(superPassword1);
-                if (systemSelected.getSelectedItem() != null) {
-                    systemMessageService.save(SystemMessage.lastCountKey, (SystemMessage) systemSelected.getSelectedItem());
+                for (IndexPanelListener listener :
+                        listeners) {
+                    listener.listenerCountSuperPasswordButton(e);
                 }
             }
         });
@@ -184,6 +230,13 @@ public class IndexPanel extends JPanel {
         }
     }
 
+    /**
+     * @description  将此系统信息设置为默认选中
+     * @param systemMessage
+     * @return void
+     * @author htx
+     * @date 下午8:46 19-7-18
+     **/
     public void setDefaultSelected(SystemMessage systemMessage) {
         for (int i = 0; i < systemSelected.getItemCount(); i++) {
             SystemMessage systemMessageItem = (SystemMessage) systemSelected.getItemAt(i);
@@ -219,6 +272,42 @@ public class IndexPanel extends JPanel {
         add(new JLabel());
         add(copySuperPasswordButton, "split 2");
         add(countSuperPasswordButton, "gapleft 350");
+    }
+
+    public JComboBox getSystemSelected() {
+        return systemSelected;
+    }
+
+    public JLabel getSystemNameLabel() {
+        return systemNameLabel;
+    }
+
+    public JButton getSelectSystemButton() {
+        return selectSystemButton;
+    }
+
+    public JLabel getSuperPasswordSeedLabel() {
+        return superPasswordSeedLabel;
+    }
+
+    public JTextField getSuperPasswordSeedTextField() {
+        return superPasswordSeedTextField;
+    }
+
+    public JLabel getSuperPasswordLabel() {
+        return superPasswordLabel;
+    }
+
+    public JLabel getSuperPassword() {
+        return superPassword;
+    }
+
+    public JButton getCopySuperPasswordButton() {
+        return copySuperPasswordButton;
+    }
+
+    public JButton getCountSuperPasswordButton() {
+        return countSuperPasswordButton;
     }
 
     /**

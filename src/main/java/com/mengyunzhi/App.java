@@ -23,8 +23,8 @@ public class App {
     }
 
     public static void main(String[] args) throws IOException {
-        dbService.delete(SystemMessage.key);
-        dbService.delete(SystemMessage.lastCountKey);
+//        dbService.delete(SystemMessage.key);
+//        dbService.delete(SystemMessage.lastCountKey);
         new MainFrame().setVisible(true);
     }
 }

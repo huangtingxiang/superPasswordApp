@@ -32,5 +32,4 @@ public interface EditPanelListener {
     void listenerDoubleClickList(SystemMessage systemMessage);
 
     void listenerDeleteButton(ActionEvent event);
-
 }

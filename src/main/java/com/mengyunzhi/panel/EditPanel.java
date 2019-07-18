@@ -1,16 +1,11 @@
 package com.mengyunzhi.panel;
 
-import com.google.common.collect.Iterables;
 import com.mengyunzhi.entity.SystemMessage;
 import com.mengyunzhi.listener.EditPanelListener;
-import com.mengyunzhi.service.SystemMessageService;
 import net.miginfocom.swing.MigLayout;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -24,8 +19,6 @@ public class EditPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(EditPanel.class.getName());
 
     public final static String name = "editPanel"; // 面板名字
-
-    SystemMessageService systemMessageService = SystemMessageService.getInstance(); // 系统信息服务
 
     private JLabel systemNameLabel; // 系统名称label
 
@@ -88,7 +81,7 @@ public class EditPanel extends JPanel {
      * @author htx
      * @date 下午4:57 19-7-17
      **/
-    void initComponent() {
+    private void initComponent() {
         // 初始化控件
         font = new Font("Serif", Font.PLAIN, 16); // 设置字体
         initComponentForSystem();
@@ -103,7 +96,7 @@ public class EditPanel extends JPanel {
      * @author htx
      * @date 下午7:52 19-7-18
      **/
-    public void initComponentForButtonBox() {
+    private void initComponentForButtonBox() {
         buttonBox = new Box(BoxLayout.Y_AXIS);
         editButton = new JButton("编辑");
         editButton.setFont(font);
@@ -124,7 +117,7 @@ public class EditPanel extends JPanel {
      * @author htx
      * @date 下午7:50 19-7-18
      **/
-    public void initComponentForSuperPasswordSeed() {
+    private void initComponentForSuperPasswordSeed() {
         superPasswordSeedLabel = new JLabel("超级密码种子:");
         superPasswordSeedLabel.setFont(font);
         superPasswordSeedTextField = new JTextField(40);
@@ -139,7 +132,7 @@ public class EditPanel extends JPanel {
      * @author htx
      * @date 下午7:49 19-7-18
      **/
-    public void initComponentForSystem() {
+    private void initComponentForSystem() {
         systemNameLabel = new JLabel("系统名称:");
         systemNameLabel.setFont(font);
         systemNameTextField = new JTextField(20);
@@ -152,14 +145,10 @@ public class EditPanel extends JPanel {
      * @author htx
      * @date 下午7:51 19-7-18
      **/
-    public void initComponentForSystemList() {
-        SystemMessage[] systemMessages = systemMessageService.getAll();
+    private void initComponentForSystemList() {
         systemMessageListModel = new DefaultListModel<>();
-        for (SystemMessage systemMessage :
-                systemMessages) {
-            systemMessageListModel.addElement(systemMessage);
-        }
         systemList = new JList<>(systemMessageListModel);
+        systemList.setFont(font);
         systemList.setCellRenderer(new SystemListCellRenderer());
         scrollPane = new JScrollPane(systemList);
         scrollPane.setPreferredSize(new Dimension(650, 500));
@@ -176,6 +165,71 @@ public class EditPanel extends JPanel {
      * @date 下午4:50 19-7-17
      **/
     private void registerEvent() {
+        registerSystemListEvent();
+        registerCancelButtonEvent();
+        registerAddButtonEvent();
+        registerDeleteButtonEvent();
+    }
+
+    /**
+     * @description 注册addButton组件事件
+     * @author htx
+     * @date 下午8:09 19-7-18
+     **/
+    private void registerAddButtonEvent() {
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (EditPanelListener listener :
+                        listeners) {
+                    listener.listenerAddButton(e);
+                }
+            }
+        });
+    }
+
+    /**
+     * @description 注册deleteButton组件事件
+     * @author htx
+     * @date 下午8:09 19-7-18
+     **/
+    private void registerDeleteButtonEvent() {
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (systemList.getSelectedValue() != null) {
+                    for (EditPanelListener listener :
+                            listeners) {
+                        listener.listenerDeleteButton(e);
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * @description 注册cancelButton组件事件
+     * @author htx
+     * @date 下午8:09 19-7-18
+     **/
+    private void registerCancelButtonEvent() {
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (EditPanelListener listener :
+                        listeners) {
+                    listener.listenerCancelButton(e);
+                }
+            }
+        });
+    }
+
+    /**
+     * @description 注册systemlist组件事件
+     * @author htx
+     * @date 下午8:09 19-7-18
+     **/
+    private void  registerSystemListEvent() {
         systemList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -188,46 +242,7 @@ public class EditPanel extends JPanel {
                 super.mouseClicked(e);
             }
         });
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (EditPanelListener listener :
-                        listeners) {
-                    listener.listenerCancelButton(e);
-                }
-            }
-        });
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SystemMessage systemMessage = new SystemMessage();
-                systemMessage.setName(systemNameTextField.getText());
-                systemMessage.setSuperPasswordSeed(superPasswordSeedTextField.getText());
-                systemMessageListModel.addElement(systemMessage);
-                systemMessageService.saveAll(selectModelToArray());
-                systemNameTextField.setText("");
-                superPasswordSeedTextField.setText("");
-                for (EditPanelListener listener :
-                        listeners) {
-                    listener.listenerAddButton(e);
-                }
-            }
-        });
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (systemList.getSelectedValue() != null) {
-                    systemMessageListModel.removeElement(systemList.getSelectedValue());
-                    systemMessageService.saveAll(selectModelToArray());
-                    for (EditPanelListener listener :
-                            listeners) {
-                        listener.listenerDeleteButton(e);
-                    }
-                }
-            }
-        });
     }
-
 
 
     /**
@@ -236,7 +251,7 @@ public class EditPanel extends JPanel {
      * @author htx
      * @date 下午7:53 19-7-18
      **/
-    private SystemMessage[] selectModelToArray() {
+    public SystemMessage[] selectModelToArray() {
         int size = systemMessageListModel.size();
         SystemMessage[] messages = new SystemMessage[size];
         for (int i = 0; i < size; i++) {
@@ -263,6 +278,54 @@ public class EditPanel extends JPanel {
         add(buttonBox, "wrap");
     }
 
+    public JLabel getSystemNameLabel() {
+        return systemNameLabel;
+    }
+
+    public JTextField getSystemNameTextField() {
+        return systemNameTextField;
+    }
+
+    public JLabel getSuperPasswordSeedLabel() {
+        return superPasswordSeedLabel;
+    }
+
+    public JTextField getSuperPasswordSeedTextField() {
+        return superPasswordSeedTextField;
+    }
+
+    public JButton getAddButton() {
+        return addButton;
+    }
+
+    public JList<SystemMessage> getSystemList() {
+        return systemList;
+    }
+
+    public JButton getEditButton() {
+        return editButton;
+    }
+
+    public JButton getDeleteButton() {
+        return deleteButton;
+    }
+
+    public JButton getCancelButton() {
+        return cancelButton;
+    }
+
+    public Box getButtonBox() {
+        return buttonBox;
+    }
+
+    public DefaultListModel<SystemMessage> getSystemMessageListModel() {
+        return systemMessageListModel;
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
     /**
      * @author htx
      * @description 设置列表渲染方式
@@ -274,7 +337,7 @@ public class EditPanel extends JPanel {
         @Override
         public Component getListCellRendererComponent(JList<? extends SystemMessage> list, SystemMessage value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            renderer.setText(value.getName() + "(" + value.getSuperPasswordSeed() + ")");
+            renderer.setText("名称: " + value.getName()+ "     超级密码种子: "  + value.getSuperPasswordSeed());
             setEnabled(list.isEnabled());
             return renderer;
         }
