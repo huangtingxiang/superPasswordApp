@@ -1,12 +1,14 @@
 package com.mengyunzhi.panel;
 
+import com.mengyunzhi.entity.SystemMessage;
 import com.mengyunzhi.listener.IndexPanelListener;
+import com.mengyunzhi.service.SystemMessageService;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,6 +20,8 @@ import java.util.Set;
 public class IndexPanel extends JPanel {
 
     public final static String name = "indexPanel";
+
+    private SystemMessageService systemMessageService = SystemMessageService.getInstance();
 
     private JComboBox systemSelected; // 系统名称下拉框
 
@@ -48,9 +52,9 @@ public class IndexPanel extends JPanel {
     }
 
     /**
-     * @description 添加监听者
      * @param indexPanelListener
      * @return void
+     * @description 添加监听者
      * @author htx
      * @date 下午4:47 19-7-17
      **/
@@ -59,8 +63,8 @@ public class IndexPanel extends JPanel {
     }
 
     /**
-     * @description 初始化面板信息
      * @return void
+     * @description 初始化面板信息
      * @author htx
      * @date 下午4:56 19-7-17
      **/
@@ -71,21 +75,24 @@ public class IndexPanel extends JPanel {
     }
 
     /**
-     * @description 初始化控件
      * @return void
+     * @description 初始化控件
      * @author htx
      * @date 下午4:55 19-7-17
      **/
     private void initComponent() {
         font = new Font("Serif", Font.PLAIN, 16); // 设置字体
+        // 初始化系统设置
         systemNameLabel = new JLabel("系统名称:"); // 系统名称
         systemNameLabel.setFont(font);
         systemSelected = new JComboBox();   // 系统下拉框
-        systemSelected.addItem("爱利益学生系统");
-        systemSelected.addItem("计量项目");
         systemSelected.setFont(font);
+        systemSelected.setRenderer(new SelectListCellRenderer());
+        reload();
+        // 初始化添加按钮
         selectSystemButton = new JButton("添加"); // 添加按钮
         selectSystemButton.setFont(font);
+        // 初始化超级密码
         superPasswordSeedLabel = new JLabel("超级密码种子:"); // 超级密码种子
         superPasswordSeedLabel.setFont(font);
         superPasswordSeedTextField = new JTextField(50);    // 超级密码种子输入框
@@ -102,8 +109,8 @@ public class IndexPanel extends JPanel {
     }
 
     /**
-     * @description  注册组件事件
      * @return void
+     * @description 注册组件事件
      * @author htx
      * @date 下午4:50 19-7-17
      **/
@@ -111,17 +118,42 @@ public class IndexPanel extends JPanel {
         selectSystemButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (IndexPanelListener listener:
-                     listeners) {
+                for (IndexPanelListener listener :
+                        listeners) {
                     listener.listenerSelectSystemButton(e);
+                }
+            }
+        });
+        systemSelected.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    SystemMessage systemMessage = (SystemMessage) e.getItem();
+                    superPasswordSeedTextField.setText(systemMessage.getSuperPasswordSeed());
                 }
             }
         });
     }
 
     /**
-     * @description  设置布局
+     * @param
      * @return void
+     * @description 重新加载数据到下拉框
+     * @author htx
+     * @date 下午4:36 19-7-18
+     **/
+    public void reload() {
+        systemSelected.removeAllItems();
+        SystemMessage[] systemMessages = systemMessageService.getAll();
+        for (SystemMessage systemMessage :
+                systemMessages) {
+            systemSelected.addItem(systemMessage);
+        }
+    }
+
+    /**
+     * @return void
+     * @description 设置布局
      * @author htx
      * @date 下午4:56 19-7-17
      **/
@@ -143,6 +175,19 @@ public class IndexPanel extends JPanel {
         add(new JLabel());
         add(copySuperPasswordButton, "split 2");
         add(countSuperPasswordButton);
+    }
+
+    class SelectListCellRenderer implements ListCellRenderer {
+
+        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            SystemMessage message = (SystemMessage) value;
+            renderer.setText(message.getName());
+            return renderer;
+        }
     }
 
 }

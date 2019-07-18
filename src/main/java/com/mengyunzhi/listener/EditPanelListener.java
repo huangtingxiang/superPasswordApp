@@ -10,6 +10,15 @@ import java.awt.event.ActionEvent;
 public interface EditPanelListener {
 
     /**
+     * @description 当addButton按钮点击时触发
+     * @param event
+     * @return void
+     * @author htx
+     * @date 下午4:43 19-7-17
+     **/
+    void listenerAddButton(ActionEvent event);
+
+    /**
      * @description 当cancelButton按钮点击时触发
      * @param event
      * @return void

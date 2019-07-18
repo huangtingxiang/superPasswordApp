@@ -3,10 +3,13 @@ package com.mengyunzhi.frame;
 import com.mengyunzhi.listener.EditPanelListener;
 import com.mengyunzhi.panel.EditPanel;
 import com.mengyunzhi.panel.IndexPanel;
+import com.mengyunzhi.service.DBService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * @author: htx
@@ -15,7 +18,9 @@ import java.awt.event.ActionEvent;
  */
 public class MainFrame extends JFrame {
 
-    JPanel mainPanel; // 主面板
+    static private Logger logger = Logger.getLogger(DBService.class.getName());
+
+    DBService dbService = DBService.getInstance();
 
     EditPanel editPanel; // 编辑面板
 
@@ -23,7 +28,9 @@ public class MainFrame extends JFrame {
 
     CardLayout layout;
 
-    public MainFrame() {
+    JPanel mainPanel; // 主面板
+
+    public MainFrame() throws IOException {
         initFrame();
         registerListener();
     }
@@ -82,12 +89,18 @@ public class MainFrame extends JFrame {
         }
     }
 
+    /**
+     * @description 内部类 负责监听edit面板
+     * @author htx
+     * @date 下午4:45 19-7-17
+     **/
     class EditPanelListener implements com.mengyunzhi.listener.EditPanelListener {
-        /**
-         * @description 内部类 负责监听edit面板
-         * @author htx
-         * @date 下午4:45 19-7-17
-         **/
+        @Override
+        public void listenerAddButton(ActionEvent event) {
+            System.out.println("点击了");
+            indexPanel.reload();
+        }
+
         @Override
         public void listenerCancelButton(ActionEvent event) {
             layout.show(mainPanel, IndexPanel.name);
