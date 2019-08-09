@@ -30,7 +30,7 @@ public class DBService {
         Options options = new Options();
         String path = null;
         try {
-            path = App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();\
+            path = App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             File data = new File(java.net.URLDecoder.decode(path, "utf-8"));
             if (!data.isDirectory()) {
                 data = new File(data.getParent() + "/" + SystemConfig.DBPath);
