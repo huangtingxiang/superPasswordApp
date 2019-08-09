@@ -1,9 +1,12 @@
 package com.mengyunzhi.service;
 
+import com.mengyunzhi.App;
 import com.mengyunzhi.config.SystemConfig;
+import com.mengyunzhi.entity.SystemMessage;
 import org.iq80.leveldb.DB;
 import org.iq80.leveldb.Options;
 
+import java.net.URISyntaxException;
 import java.util.logging.Logger;
 
 import static org.iq80.leveldb.impl.Iq80DBFactory.factory;
@@ -25,9 +28,22 @@ public class DBService {
 
     private DBService() throws IOException {
         Options options = new Options();
-        String path = getClass().getClassLoader().getResource(SystemConfig.DBPath).getPath();
-        path = java.net.URLDecoder.decode(path, "utf-8");
-        levelDBStore = factory.open(new File(path), options);
+        String path = null;
+        try {
+            path = App.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();\
+            File data = new File(java.net.URLDecoder.decode(path, "utf-8"));
+            if (!data.isDirectory()) {
+                data = new File(data.getParent() + "/" + SystemConfig.DBPath);
+                System.out.println(data.getParent() + "paremt");
+            } else {
+                data = new File(data.getPath() + "/" + SystemConfig.DBPath);
+                System.out.println(data.getPath());
+            }
+            System.out.println(data.getPath());
+            levelDBStore = factory.open(data, options);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
 
