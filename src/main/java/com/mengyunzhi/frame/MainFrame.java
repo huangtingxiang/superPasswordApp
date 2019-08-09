@@ -2,6 +2,7 @@ package com.mengyunzhi.frame;
 
 import com.mengyunzhi.entity.SystemMessage;
 import com.mengyunzhi.panel.EditPanel;
+import com.mengyunzhi.panel.ManagerPanel;
 import com.mengyunzhi.panel.IndexPanel;
 import com.mengyunzhi.service.DBService;
 import com.mengyunzhi.service.SuperPasswordService;
@@ -13,7 +14,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Logger;
 
@@ -28,7 +28,7 @@ public class MainFrame extends JFrame {
 
     private SuperPasswordService superPasswordService = SuperPasswordService.getInstance();
 
-    EditPanel editPanel; // 编辑面板
+    ManagerPanel managerPanel; // 编辑面板
 
     IndexPanel indexPanel; // 首页面板
 
@@ -41,6 +41,7 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         initFrame();
         registerListener();
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -58,14 +59,14 @@ public class MainFrame extends JFrame {
         setTitle("超级密码生成器");
         // 设置面板
         mainPanel = new JPanel(layout);
-        editPanel = new EditPanel();
+        managerPanel = new ManagerPanel();
         indexPanel = new IndexPanel();
         mainPanel.add(indexPanel, IndexPanel.name);
-        mainPanel.add(editPanel, EditPanel.name);
+        mainPanel.add(managerPanel, ManagerPanel.name);
         getContentPane().add(mainPanel);
         // 设置面板初始数据
         initIndexPanel();
-        initEditPanel();
+        initManagerPanel();
     }
 
     /**
@@ -91,12 +92,12 @@ public class MainFrame extends JFrame {
      * @author htx
      * @date 下午8:51 19-7-18
      **/
-    private void  initEditPanel() {
+    private void  initManagerPanel() {
         // edit面板 初始化完成时注入数据
         SystemMessage[] systemMessages = systemMessageService.getAll();
         for (SystemMessage systemMessage :
                 systemMessages) {
-            editPanel.getSystemMessageListModel().addElement(systemMessage);
+            managerPanel.getSystemMessageListModel().addElement(systemMessage);
         }
     }
 
@@ -109,7 +110,7 @@ public class MainFrame extends JFrame {
      **/
     void registerListener() {
         this.indexPanel.addListener(new IndexPanelListener());
-        this.editPanel.addListener(new EditPanelListener());
+        this.managerPanel.addListener(new ManagerListener());
     }
 
     /**
@@ -128,7 +129,7 @@ public class MainFrame extends JFrame {
          **/
         @Override
         public void listenerSelectSystemButton(ActionEvent event) {
-            layout.show(mainPanel, EditPanel.name);
+            layout.show(mainPanel, ManagerPanel.name);
         }
 
         @Override
@@ -161,23 +162,24 @@ public class MainFrame extends JFrame {
      * @description 内部类 负责监听edit面板
      * @date 下午4:45 19-7-17
      **/
-    class EditPanelListener implements com.mengyunzhi.listener.EditPanelListener {
+    class ManagerListener implements com.mengyunzhi.listener.ManagerListener {
         @Override
         public void listenerAddButton(ActionEvent event) {
             // 添加按钮点击时 增加系统信息到数据库 并更新index面板
             SystemMessage systemMessage = new SystemMessage();
-            systemMessage.setName(editPanel.getSystemNameTextField().getText());
-            systemMessage.setSuperPasswordSeed(editPanel.getSuperPasswordSeedTextField().getText());
-            editPanel.getSystemMessageListModel().addElement(systemMessage);
-            systemMessageService.saveAll(editPanel.selectModelToArray());
-            editPanel.getSystemNameTextField().setText("");
-            editPanel.getSuperPasswordSeedTextField().setText("");
+            systemMessage.setName(managerPanel.getSystemNameTextField().getText());
+            systemMessage.setSuperPasswordSeed(managerPanel.getSuperPasswordSeedTextField().getText());
+            managerPanel.getSystemMessageListModel().addElement(systemMessage);
+            systemMessageService.saveAll(managerPanel.selectModelToArray());
+            managerPanel.getSystemNameTextField().setText("");
+            managerPanel.getSuperPasswordSeedTextField().setText("");
             indexPanel.reload();
         }
 
         @Override
         public void listenerCancelButton(ActionEvent event) {
             // 返回切换到index面板
+            indexPanel.reload();
             layout.show(mainPanel, IndexPanel.name);
         }
 
@@ -191,9 +193,35 @@ public class MainFrame extends JFrame {
         @Override
         public void listenerDeleteButton(ActionEvent event) {
             // 删除edit面板列表模型并保存
-            editPanel.getSystemMessageListModel().removeElement(editPanel.getSystemList().getSelectedValue());
-            systemMessageService.saveAll(editPanel.selectModelToArray());
-            indexPanel.reload();
+            managerPanel.getSystemMessageListModel().removeElement(managerPanel.getSystemList().getSelectedValue());
+            systemMessageService.saveAll(managerPanel.selectModelToArray());
+        }
+
+        @Override
+        public void listenerEditButton(ActionEvent event) {
+
+            SystemMessage message = managerPanel.getSystemList().getSelectedValue();
+
+            EditPanel editPanel = new EditPanel();
+
+            if (message != null) {
+                editPanel.getNameTextField().setText(message.getName());
+                editPanel.getSeedTextField().setText(message.getSuperPasswordSeed());
+            }
+
+            int result = JOptionPane.showConfirmDialog(MainFrame.this,
+                    editPanel,
+                    "编辑",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE);
+
+            if (result == JOptionPane.OK_OPTION) {
+                message.setName(editPanel.getNameTextField().getText());
+                message.setSuperPasswordSeed(editPanel.getSeedTextField().getText());
+                int index = managerPanel.getSystemList().getSelectedIndex();
+                managerPanel.getSystemMessageListModel().set(index, message);
+                systemMessageService.saveAll(managerPanel.selectModelToArray());
+            }
         }
 
     }

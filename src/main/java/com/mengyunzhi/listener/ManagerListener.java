@@ -9,7 +9,7 @@ import java.awt.event.ActionEvent;
  * @describe 编辑面板监听者
  * @date: 19-7-17
  */
-public interface EditPanelListener {
+public interface ManagerListener {
 
     /**
      * @description 当addButton按钮点击时触发
@@ -32,4 +32,6 @@ public interface EditPanelListener {
     void listenerDoubleClickList(SystemMessage systemMessage);
 
     void listenerDeleteButton(ActionEvent event);
+
+    void listenerEditButton(ActionEvent event);
 }

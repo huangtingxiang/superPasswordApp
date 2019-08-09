@@ -119,8 +119,8 @@ public class IndexPanel extends JPanel {
      * @date 下午8:22 19-7-18
      **/
     private void initComponentForSystemSelected() {
-        // 初始化添加按钮
-        selectSystemButton = new JButton("添加"); // 添加按钮
+        // 初始化管理按钮
+        selectSystemButton = new JButton("管理"); // 管理按钮
         selectSystemButton.setFont(font);
         // 初始化系统设置
         systemNameLabel = new JLabel("系统名称:"); // 系统名称
@@ -270,8 +270,8 @@ public class IndexPanel extends JPanel {
         add(superPasswordLabel, "gapleft 50");
         add(superPassword, "wrap");
         add(new JLabel());
-        add(copySuperPasswordButton, "split 2");
-        add(countSuperPasswordButton, "gapleft 350");
+        add(copySuperPasswordButton, "split 2,gapleft 100");
+        add(countSuperPasswordButton,"gapleft 50");
     }
 
     public JComboBox getSystemSelected() {
